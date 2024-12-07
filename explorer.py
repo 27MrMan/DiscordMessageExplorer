@@ -19,6 +19,7 @@ input_area = pygame.Rect(50, 150, 900, 39)
 user_text = ''
 current_menu = "Start"
 current_tab = "landing"
+mousedown = False
 #discord purple
 purple = (88,101,242)
 
@@ -38,10 +39,9 @@ def draw_tab(position, borderradius, text):
     pygame.draw.rect(screen, purple, (position, 20, 120, 70), 2, borderradius)
     global current_tab
 
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if tab_rect.collidepoint(pygame.mouse.get_pos()):
-                current_tab = text
+    if mousedown:
+        if tab_rect.collidepoint(pygame.mouse.get_pos()):
+            current_tab = text
 
 #main loop
 running = True
@@ -53,7 +53,11 @@ while running:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            running=False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mousedown = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            mousedown = False
 
     if current_menu == "Start":
         #discord background color :P
@@ -74,17 +78,10 @@ while running:
         title_text = pygame.font.Font('assets/Ubuntu-Medium.ttf', 75).render("Discord Message Explorer", True, (250,250,250))
         title_text_rect = title_text.get_rect(center=(500, 80))
         screen.blit(title_text, title_text_rect)
-
-        
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running=False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if current_menu == "Start":
-                    # Handle main menu button clicks
-                    if start_button_rect.collidepoint(event.pos):
-                        current_menu = "ResultsPage"
+                
+        # Handle main menu button clicks
+        if start_button_rect.collidepoint(pygame.mouse.get_pos()) and mousedown:
+            current_menu = "ResultsPage"
 
     if current_menu == "ResultsPage":
         screen.fill((53,56,63))
