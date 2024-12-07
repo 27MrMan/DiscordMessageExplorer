@@ -86,16 +86,6 @@ while running:
     if current_menu == "ResultsPage":
         screen.fill((53,56,63))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running=False
-            if event.type == pygame.KEYDOWN:
-                # Check for backspace when user has room temperature IQ (in Fahrenheit)
-                if event.key == pygame.K_BACKSPACE:
-                    user_text = user_text[:-1]
-                else:
-                    user_text += event.unicode
-
         topbar_rect = pygame.draw.rect(screen, (47, 50, 56), (0, 0, 1000, 70))
         draw_tab(10, 9, 'Words')
         draw_tab(140, 9, 'Users')
@@ -118,6 +108,16 @@ while running:
             # for long(er) answers
             input_area.w = max(max(100, text_surface.get_width() + 10),900)
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running=False
+            if event.type == pygame.KEYDOWN:
+                # Check for backspace when user has room temperature IQ (in Fahrenheit)
+                if event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                else:
+                    user_text += event.unicode
+                    
     pygame.display.update()
 #    print(timing_thing)
 pygame.quit()
