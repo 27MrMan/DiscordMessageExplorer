@@ -6,6 +6,10 @@ matplotlib.use('module://pygame_matplotlib.backend_pygame')
 import matplotlib.pyplot as plt
 #for proper text input design
 import time
+#for reading the csv of messages
+import pandas
+#for checking if something is present in a message
+import re
 
 #window setup
 pygame.init()
@@ -21,8 +25,19 @@ current_menu = "Start"
 current_tab = "landing"
 mousedown = False
 active = True
+calculated = False
+#gotta make this configurable
+filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
+data = ''
 #discord purple
 purple = (88,101,242)
+contentlist = []
+authorlist = []
+listofauthors = []
+listofauthorscount = []
+
+#List of Interesting Things
+lt = []
 
 
 #functions
@@ -43,6 +58,13 @@ def draw_tab(position, borderradius, text):
     if mousedown:
         if tab_rect.collidepoint(pygame.mouse.get_pos()):
             current_tab = text
+
+def word_in_text(word, text):
+    pattern = r'(^|[^\w]){}([^\w]|$)'.format(word)
+    pattern = re.compile(pattern, re.IGNORECASE)
+    matches = re.search(pattern, text)
+
+    return bool(matches)
 
 #main loop
 running = True
@@ -106,6 +128,25 @@ while running:
             if mousedown:
                 if input_area.collidepoint(pygame.mouse.get_pos()):
                     active = True
+
+            if not(active):
+                if not(calculated):
+                    data = pandas.read_csv(filelocation)
+                    for i in data['Content']:
+                        contentlist.append(i)
+                    for j in data['Author']:
+                        if not(j in listofauthors):
+                            listofauthors.append(j)
+                            listofauthorscount.append(0)
+                        authorlist.append(j)
+                    calculated = True
+                    for k in contentlist:
+                        if word_in_text(user_text, str(k)):
+                            #be careful trying to understand this
+                            listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
+                    print(listofauthors)
+                    print(listofauthorscount)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
