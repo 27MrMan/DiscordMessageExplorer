@@ -15,11 +15,12 @@ pygame.display.set_caption("Discord Message Explorer")
 
 #variables
 timing_thing = 0
-input_area = pygame.Rect(50, 150, 900, 39)
+input_area = pygame.Rect(50, 100, 900, 39)
 user_text = ''
 current_menu = "Start"
 current_tab = "landing"
 mousedown = False
+active = True
 #discord purple
 purple = (88,101,242)
 
@@ -50,14 +51,6 @@ while running:
     timing_thing += 1
     if timing_thing >60:
         timing_thing = 0
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running=False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mousedown = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            mousedown = False
 
     if current_menu == "Start":
         #discord background color :P
@@ -99,14 +92,20 @@ while running:
             pygame.draw.rect(screen, (47,50,56), input_area, border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), input_area, 2, 3)
 
-            if round(time.time())%2==0:
+            if round(time.time())%2==0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
-            else:
+            elif round(time.time())%2!=0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "|", True, (255, 215, 0))
+            else:
+                text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
 
             screen.blit(text_surface, (input_area.x + 5, input_area.y - 1))
             # for long(er) answers
             input_area.w = max(max(100, text_surface.get_width() + 10),900)
+
+            if mousedown:
+                if input_area.collidepoint(pygame.mouse.get_pos()):
+                    active = True
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -115,9 +114,24 @@ while running:
                 # Check for backspace when user has room temperature IQ (in Fahrenheit)
                 if event.key == pygame.K_BACKSPACE:
                     user_text = user_text[:-1]
+                elif event.key == pygame.K_RETURN:
+                    active = False
                 else:
                     user_text += event.unicode
-                    
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mousedown = True
+            if event.type == pygame.MOUSEBUTTONUP:
+                mousedown = False
+
+    #run every frame                
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running=False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mousedown = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            mousedown = False
+            
     pygame.display.update()
 #    print(timing_thing)
 pygame.quit()
