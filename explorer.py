@@ -35,6 +35,8 @@ contentlist = []
 authorlist = []
 listofauthors = []
 listofauthorscount = []
+authorlisthelper = {}
+newauthorlisthelper = {}
 
 #List of Interesting Things
 lt = []
@@ -131,6 +133,7 @@ while running:
 
             if not(active):
                 if not(calculated):
+                    calculated = True
                     data = pandas.read_csv(filelocation)
                     for i in data['Content']:
                         contentlist.append(i)
@@ -139,14 +142,29 @@ while running:
                             listofauthors.append(j)
                             listofauthorscount.append(0)
                         authorlist.append(j)
-                    calculated = True
                     for k in contentlist:
                         if word_in_text(user_text, str(k)):
                             #be careful trying to understand this
                             listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
-                    print(listofauthors)
-                    print(listofauthorscount)
 
+                    for j in range(len(listofauthorscount)):
+                        listofauthorscount[j] = str(listofauthorscount[j]) 
+                    print(listofauthorscount)
+                    print(listofauthors)
+
+                    if len(listofauthors) > 7:
+                        for i in range(len(listofauthors)):
+                            authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
+                        print(authorlisthelper)
+                        for j in authorlisthelper.keys():
+                            if authorlisthelper[j] != '0':
+                                newauthorlisthelper.update({j:authorlisthelper[j]})
+                    
+                    print(newauthorlisthelper)
+                            
+                    listofauthors = newauthorlisthelper.keys()
+                    listofauthorscount = newauthorlisthelper.values()
+                    
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
