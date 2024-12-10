@@ -6,6 +6,10 @@ matplotlib.use('module://pygame_matplotlib.backend_pygame')
 import matplotlib.pyplot as plt
 #for proper text input design
 import time
+#for reading the csv of messages
+import pandas
+#for checking if something is present in a message
+import re
 
 #window setup
 pygame.init()
@@ -14,13 +18,29 @@ screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
 
 #variables
+start_time = 0
 timing_thing = 0
-input_area = pygame.Rect(50, 150, 900, 39)
+input_area = pygame.Rect(50, 100, 900, 39)
 user_text = ''
 current_menu = "Start"
 current_tab = "landing"
+mousedown = False
+active = True
+calculated = False
+#gotta make this configurable
+filelocation = "messages.csv"
+data = ''
 #discord purple
 purple = (88,101,242)
+contentlist = []
+authorlist = []
+listofauthors = []
+listofauthorscount = []
+authorlisthelper = {}
+newauthorlisthelper = {}
+
+#List of Interesting Things
+lt = []
 
 
 #functions
@@ -38,10 +58,16 @@ def draw_tab(position, borderradius, text):
     pygame.draw.rect(screen, purple, (position, 20, 120, 70), 2, borderradius)
     global current_tab
 
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if tab_rect.collidepoint(pygame.mouse.get_pos()):
-                current_tab = text
+    if mousedown:
+        if tab_rect.collidepoint(pygame.mouse.get_pos()):
+            current_tab = text
+
+def word_in_text(word, text):
+    pattern = r'(^|[^\w]){}([^\w]|$)'.format(word)
+    pattern = re.compile(pattern, re.IGNORECASE)
+    matches = re.search(pattern, text)
+
+    return bool(matches)
 
 #main loop
 running = True
@@ -50,10 +76,6 @@ while running:
     timing_thing += 1
     if timing_thing >60:
         timing_thing = 0
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
     if current_menu == "Start":
         #discord background color :P
@@ -74,30 +96,13 @@ while running:
         title_text = pygame.font.Font('assets/Ubuntu-Medium.ttf', 75).render("Discord Message Explorer", True, (250,250,250))
         title_text_rect = title_text.get_rect(center=(500, 80))
         screen.blit(title_text, title_text_rect)
-
-        
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running=False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if current_menu == "Start":
-                    # Handle main menu button clicks
-                    if start_button_rect.collidepoint(event.pos):
-                        current_menu = "ResultsPage"
+                
+        # Handle main menu button clicks
+        if start_button_rect.collidepoint(pygame.mouse.get_pos()) and mousedown:
+            current_menu = "ResultsPage"
 
     if current_menu == "ResultsPage":
         screen.fill((53,56,63))
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running=False
-            if event.type == pygame.KEYDOWN:
-                # Check for backspace when user has room temperature IQ (in Fahrenheit)
-                if event.key == pygame.K_BACKSPACE:
-                    user_text = user_text[:-1]
-                else:
-                    user_text += event.unicode
 
         topbar_rect = pygame.draw.rect(screen, (47, 50, 56), (0, 0, 1000, 70))
         draw_tab(10, 9, 'Words')
@@ -112,15 +117,96 @@ while running:
             pygame.draw.rect(screen, (47,50,56), input_area, border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), input_area, 2, 3)
 
-            if round(time.time())%2==0:
+            if round(time.time())%2==0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
-            else:
+            elif round(time.time())%2!=0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "|", True, (255, 215, 0))
+            else:
+                text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
 
             screen.blit(text_surface, (input_area.x + 5, input_area.y - 1))
             # for long(er) answers
             input_area.w = max(max(100, text_surface.get_width() + 10),900)
 
+            if mousedown:
+                if input_area.collidepoint(pygame.mouse.get_pos()):
+                    active = True
+
+            if not(active):
+                if not(calculated):
+                    #if user wants to see more than one plot
+                    contentlist = []
+                    authorlist = []
+                    listofauthors = []
+                    listofauthorscount = []
+                    authorlisthelper = {}
+                    newauthorlisthelper = {}
+                    start_time = time.time()
+
+                    calculated = True
+                    print(user_text)
+                    data = pandas.read_csv(filelocation)
+
+                    for i in data['Content']:
+                        contentlist.append(i)
+                    for j in data['Author']:
+                        if not(j in listofauthors):
+                            listofauthors.append(j)
+                            listofauthorscount.append(0)
+                        authorlist.append(j)
+                    for k in contentlist:
+                        if word_in_text(user_text, str(k)):
+                            #be careful trying to understand this
+                            listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
+
+                    for i in range(len(listofauthors)):
+                        authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
+
+                    for j in authorlisthelper.keys():
+                        if authorlisthelper[j] != 0 or len(listofauthors) < 5:
+                            newauthorlisthelper.update({j:authorlisthelper[j]})
+                    
+                    start_time = time.time()-start_time
+                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
+                    print(newauthorlisthelper)
+                            
+                    listofauthors = newauthorlisthelper.keys()
+                    listofauthorscount = newauthorlisthelper.values()
+
+                    fig, axes = plt.subplots(1, 1)
+                    axes.bar(listofauthors, listofauthorscount, color='green', label='test')
+                    fig.patch.set_facecolor('#41454D')
+                    axes.set_facecolor('#35383E')
+                    fig.canvas.draw()
+
+                screen.blit(fig, (175, 150))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running=False
+            if event.type == pygame.KEYDOWN:
+                # Check for backspace when user has room temperature IQ (in Fahrenheit)
+                if event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                elif event.key == pygame.K_RETURN:
+                    active = False
+                    calculated = False
+                else:
+                    user_text += event.unicode
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mousedown = True
+            if event.type == pygame.MOUSEBUTTONUP:
+                mousedown = False
+
+    #run every frame                
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running=False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mousedown = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            mousedown = False
+            
     pygame.display.update()
 #    print(timing_thing)
 pygame.quit()
