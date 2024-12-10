@@ -18,6 +18,7 @@ screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
 
 #variables
+start_time = 0
 timing_thing = 0
 input_area = pygame.Rect(50, 100, 900, 39)
 user_text = ''
@@ -133,8 +134,19 @@ while running:
 
             if not(active):
                 if not(calculated):
+                    #if user wants to see more than one plot
+                    contentlist = []
+                    authorlist = []
+                    listofauthors = []
+                    listofauthorscount = []
+                    authorlisthelper = {}
+                    newauthorlisthelper = {}
+                    start_time = time.time()
+
                     calculated = True
+                    print(user_text)
                     data = pandas.read_csv(filelocation)
+
                     for i in data['Content']:
                         contentlist.append(i)
                     for j in data['Author']:
@@ -147,24 +159,27 @@ while running:
                             #be careful trying to understand this
                             listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
 
-                    for j in range(len(listofauthorscount)):
-                        listofauthorscount[j] = str(listofauthorscount[j]) 
-                    print(listofauthorscount)
-                    print(listofauthors)
+                    for i in range(len(listofauthors)):
+                        authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
 
-                    if len(listofauthors) > 7:
-                        for i in range(len(listofauthors)):
-                            authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
-                        print(authorlisthelper)
-                        for j in authorlisthelper.keys():
-                            if authorlisthelper[j] != '0':
-                                newauthorlisthelper.update({j:authorlisthelper[j]})
+                    for j in authorlisthelper.keys():
+                        if authorlisthelper[j] != 0 or len(listofauthors) < 5:
+                            newauthorlisthelper.update({j:authorlisthelper[j]})
                     
+                    start_time = time.time()-start_time
+                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
                     print(newauthorlisthelper)
                             
                     listofauthors = newauthorlisthelper.keys()
                     listofauthorscount = newauthorlisthelper.values()
-                    
+
+                    fig, axes = plt.subplots(1, 1)
+                    axes.bar(listofauthors, listofauthorscount, color='green', label='test')
+                    fig.patch.set_facecolor('#41454D')
+                    axes.set_facecolor('#35383E')
+                    fig.canvas.draw()
+
+                screen.blit(fig, (175, 150))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -175,6 +190,7 @@ while running:
                     user_text = user_text[:-1]
                 elif event.key == pygame.K_RETURN:
                     active = False
+                    calculated = False
                 else:
                     user_text += event.unicode
             if event.type == pygame.MOUSEBUTTONDOWN:
