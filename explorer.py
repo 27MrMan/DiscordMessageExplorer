@@ -28,7 +28,7 @@ mousedown = False
 active = True
 calculated = False
 #gotta make this configurable
-filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
+filelocation = "messages.csv"
 data = ''
 #discord purple
 purple = (88,101,242)
