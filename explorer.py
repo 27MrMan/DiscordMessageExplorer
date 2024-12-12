@@ -27,6 +27,9 @@ current_tab = "landing"
 mousedown = False
 active = True
 calculated = False
+recentToggle = 0
+#for checking if each checkbox has been clicked.
+toggled_checkboxes = [False]
 #gotta make this configurable
 filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
 data = ''
@@ -34,6 +37,7 @@ data = ''
 purple = (88,101,242)
 contentlist = []
 authorlist = []
+messagecount = []
 listofauthors = []
 listofauthorscount = []
 authorlisthelper = {}
@@ -117,6 +121,19 @@ while running:
             pygame.draw.rect(screen, (47,50,56), input_area, border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), input_area, 2, 3)
 
+            if toggled_checkboxes[0] == False:
+                checkbox1=pygame.draw.rect(screen, (47, 50, 56), (45, 200, 30, 30), border_radius=3)
+            else: 
+                checkbox1=pygame.draw.rect(screen, purple, (45, 200, 30, 30), border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
+
+            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Normalize\n Plot", True, (250, 250, 250))
+            screen.blit(checkbox1_text, (80, 200, 30, 30))
+
+            if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
+                recentToggle = round(time.time(), 2)
+                toggled_checkboxes[0] = not(toggled_checkboxes[0])
+
             if round(time.time())%2==0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
             elif round(time.time())%2!=0 and active:
@@ -139,6 +156,7 @@ while running:
                     authorlist = []
                     listofauthors = []
                     listofauthorscount = []
+                    messagecount = []
                     authorlisthelper = {}
                     newauthorlisthelper = {}
                     start_time = time.time()
@@ -167,11 +185,24 @@ while running:
                             newauthorlisthelper.update({j:authorlisthelper[j]})
                     
                     start_time = time.time()-start_time
+
                     print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
                     print(newauthorlisthelper)
                             
-                    listofauthors = newauthorlisthelper.keys()
-                    listofauthorscount = newauthorlisthelper.values()
+                    listofauthors = list(newauthorlisthelper.keys())
+                    listofauthorscount = list(newauthorlisthelper.values())
+
+                    for i in range(len(listofauthors)):
+                        messagecount.append(0)
+                    for i in authorlist:
+                        if i in listofauthors:
+                            messagecount[listofauthors.index(i)] += 1
+
+                    print(messagecount)
+
+                    if toggled_checkboxes[0]:
+                        for i in range(len(listofauthorscount)):
+                            listofauthorscount[i] /= messagecount[i]
 
                     fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
