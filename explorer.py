@@ -28,7 +28,7 @@ mousedown = False
 active = True
 calculated = False
 #gotta make this configurable
-filelocation = "messages.csv"
+filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
 data = ''
 #discord purple
 purple = (88,101,242)
@@ -174,7 +174,14 @@ while running:
                     listofauthorscount = newauthorlisthelper.values()
 
                     fig, axes = plt.subplots(1, 1)
-                    axes.bar(listofauthors, listofauthorscount, color='green', label='test')
+                    axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
+
+                    plt.title("Times used: "+user_text, fontsize=20 )
+                    plt.xticks(fontsize = 10)
+                    for tick in axes.xaxis.get_major_ticks()[1::2]:
+                        tick.set_pad(15)
+
+
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
