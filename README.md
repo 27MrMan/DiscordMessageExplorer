@@ -1,6 +1,3 @@
-# Discord Message Explorer
+# Dev Branch
 
-This program is to find and display statistics from discord messages
-For example, from servers or group DMs.
-
-Project currently just started. Very much incomplete.
+In this branch, I will commit small changes, gradually turning into a full release. Feel free to check out the code :)
