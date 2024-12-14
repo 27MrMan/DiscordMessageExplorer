@@ -23,13 +23,14 @@ timing_thing = 0
 input_area = pygame.Rect(50, 100, 900, 39)
 user_text = ''
 current_menu = "Start"
+current_current_tab = ''
 current_tab = "landing"
 mousedown = False
 active = True
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
-toggled_checkboxes = [False]
+toggled_checkboxes = [False, False]
 #gotta make this configurable
 filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
 data = ''
@@ -203,11 +204,69 @@ while running:
                     if toggled_checkboxes[0]:
                         for i in range(len(listofauthorscount)):
                             listofauthorscount[i] /= messagecount[i]
+                            listofauthorscount[i] *= 100
 
                     fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
 
                     plt.title("Times used: "+user_text, fontsize=20 )
+                    plt.xticks(fontsize = 10)
+                    for tick in axes.xaxis.get_major_ticks()[1::2]:
+                        tick.set_pad(15)
+
+
+                    fig.patch.set_facecolor('#41454D')
+                    axes.set_facecolor('#35383E')
+                    fig.canvas.draw()
+
+                screen.blit(fig, (175, 150))
+
+        if current_tab == 'Users':
+            if toggled_checkboxes[1] == False:
+                checkbox2=pygame.draw.rect(screen, (47, 50, 56), (45, 100, 910, 30), border_radius=3)
+            else: 
+                checkbox2=pygame.draw.rect(screen, purple, (45, 100, 910, 30), border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), (45, 100, 910, 30), 2, 3)
+
+            checkbox2_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Calculate & Display                                                                   (click here)", True, (250, 250, 250))
+            screen.blit(checkbox2_text, (60, 102, 910, 30))
+
+            if checkbox2.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
+                recentToggle = round(time.time(), 2)
+                toggled_checkboxes[1]=not(toggled_checkboxes[1])
+                active = False
+                calculated= False
+
+            if not(active):
+                if not(calculated):
+                    #if user wants to see more than one plot
+                    contentlist = []
+                    authorlist = []
+                    listofauthors = []
+                    listofauthorscount = []
+                    messagecount = []
+                    authorlisthelper = {}
+                    newauthorlisthelper = {}
+                    start_time = time.time()
+
+                    calculated = True
+                    print(user_text)
+                    data = pandas.read_csv(filelocation)
+
+
+                    for j in data['Author']:
+                        if not(j in listofauthors):
+                            listofauthors.append(j)
+                            listofauthorscount.append(0)
+                        authorlist.append(j)
+
+                    for k in authorlist:
+                        listofauthorscount[listofauthors.index(k)] += 1
+
+                    fig, axes = plt.subplots(1, 1)
+                    axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
+
+                    plt.title("Messages Sent", fontsize=20 )
                     plt.xticks(fontsize = 10)
                     for tick in axes.xaxis.get_major_ticks()[1::2]:
                         tick.set_pad(15)
