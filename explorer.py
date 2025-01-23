@@ -35,7 +35,9 @@ active = True
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
+
 toggled_checkboxes = [False, False, False]
+
 #gotta make this configurable
 filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
 data = ''
