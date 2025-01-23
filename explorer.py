@@ -13,6 +13,8 @@ import re
 #for finding the most used word
 from collections import Counter
 from functools import reduce
+#for sorting dictionaries
+from collections import OrderedDict
 
 #window setup
 pygame.init()
@@ -80,7 +82,7 @@ def word_in_text(word, text):
 def most_frequent_word(list):
     all_words = reduce(lambda a, b: a + b, [sub.split() for sub in list])
     word_counts = Counter(all_words)
-    return word_counts.most_common(7)
+    return word_counts.most_common(10)
 
 #main loop
 running = True
@@ -148,21 +150,44 @@ while running:
                     contentlist = []
                     wordlist = []
                     wordcount = []
+                    test1 = 0
+                    test2 = 1000
+                    outputs = []
                     start_time = time.time()
 
-                    calculated = True
                     print(user_text)
                     data = pandas.read_csv(filelocation)
 
                     for i in data['Content']:
-                        contentlist.append(str(i))
+                        contentlist.append(str(i).lower())
 
-                    output1 = most_frequent_word(contentlist[:1000])
-                    print(output1)
 
-                    for i in output1:
-                        wordlist.append(i[0])
-                        wordcount.append(i[1])
+                    while True:
+                        outputs.append(most_frequent_word(contentlist[test1:test2]))
+                        if test2 == len(contentlist):
+                            break
+                        if test2 + 1000 < len(contentlist):
+                            test1,test2 = test2, test2+1000
+                        else:
+                            test1,test2 = test2, len(contentlist)
+                    
+                    for i in outputs:
+                        for j in i:
+                            if not(j[0] in wordlist):
+                                wordlist.append(j[0])
+                                wordcount.append(j[1])
+                            else:
+                                wordcount[wordlist.index(j[0])] += j[1]
+
+                    opdict = dict(zip(wordcount, wordlist))
+                    sorted_dict = OrderedDict(sorted(opdict.items()))
+                    print(sorted_dict)
+
+                    wordcount = list(sorted_dict.keys())[:]
+                    wordlist = list(sorted_dict.values())[:]
+                    wordcount,wordlist = wordcount[::-1],wordlist[::-1]
+                    wordcount = wordcount[:10]
+                    wordlist = wordlist[:10]
 
                     calculated = True
                     print("Calculated in ", round(time.time()-start_time, 3), "seconds!")
