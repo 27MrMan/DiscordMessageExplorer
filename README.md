@@ -7,8 +7,8 @@ Project currently just started. Very much incomplete.
 
 # Status
 
-Currently working on more plots, for example "Most Messages" or "Message per Messages"
-First working version of the program is complete :D Now, in the program you can do the following:
+Currently, objectives are complete. Feel free to create an issue and suggest new plots :)
+3rd working version of the program is complete :D Now, in the program you can do the following:
 
 # How to use
 
@@ -17,3 +17,8 @@ First working version of the program is complete :D Now, in the program you can 
 - Then, rename that file to 'messages.csv'
 - Run the program, and in the 'Words' tab, you can enter any word, and it will display a chart with the statics of how much each user uses that word.
 - If a user isnt on that graph, it means they did not use that word. 
+
+# Completed Objectives
+- Most messages sent leaderboard
+- Message occurance per total messages
+- Most used word leaderboard

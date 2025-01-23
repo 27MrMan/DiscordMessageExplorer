@@ -10,6 +10,11 @@ import time
 import pandas
 #for checking if something is present in a message
 import re
+#for finding the most used word
+from collections import Counter
+from functools import reduce
+#for sorting dictionaries
+from collections import OrderedDict
 
 #window setup
 pygame.init()
@@ -30,7 +35,9 @@ active = True
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
-toggled_checkboxes = [False, False]
+
+toggled_checkboxes = [False, False, False]
+
 #gotta make this configurable
 filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
 data = ''
@@ -60,7 +67,7 @@ def draw_tab(position, borderradius, text):
         pygame.draw.rect(screen, (45, 48, 53), (position, 20, 120, 70), border_radius=borderradius)
     tab_text = pygame.font.Font('assets/Ubuntu-Bold.ttf', 35).render(text, True, (250, 250, 250))
     screen.blit(tab_text, (position+9, 25, 120, 70 ))
-    pygame.draw.rect(screen, purple, (position, 20, 120, 70), 2, borderradius)
+    pygame.draw.rect(screen, purple, (position, 20, 1200, 70), 2, borderradius)
     global current_tab
 
     if mousedown:
@@ -73,6 +80,11 @@ def word_in_text(word, text):
     matches = re.search(pattern, text)
 
     return bool(matches)
+
+def most_frequent_word(list):
+    all_words = reduce(lambda a, b: a + b, [sub.split() for sub in list])
+    word_counts = Counter(all_words)
+    return word_counts.most_common(10)
 
 #main loop
 running = True
@@ -112,11 +124,90 @@ while running:
         topbar_rect = pygame.draw.rect(screen, (47, 50, 56), (0, 0, 1000, 70))
         draw_tab(10, 9, 'Words')
         draw_tab(140, 9, 'Users')
+        draw_tab(270, 9, 'Messages')
         backgroundfill = pygame.draw.rect(screen, (53, 56, 63), (0, 70, 1000, 600))
         pygame.draw.line(screen, purple, (0, 70), (1000, 70), width=2)
 
         if current_tab == 'landing':
             pass
+
+        if current_tab == 'Messages':
+            if toggled_checkboxes[2] == False:
+                checkbox3=pygame.draw.rect(screen, (47, 50, 56), (45, 100, 910, 30), border_radius=3)
+            else: 
+                checkbox3=pygame.draw.rect(screen, purple, (45, 100, 910, 30), border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), (45, 100, 910, 30), 2, 3)
+
+            checkbox3_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Find the most used word                                                           (click here)", True, (250, 250, 250))
+            screen.blit(checkbox3_text, (60, 102, 910, 30))
+
+            if checkbox3.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
+                recentToggle = round(time.time(), 2)
+                toggled_checkboxes[2]=not(toggled_checkboxes[2])
+                active = False
+                calculated= False
+
+            if not(active):
+                if not(calculated):
+                    contentlist = []
+                    wordlist = []
+                    wordcount = []
+                    test1 = 0
+                    test2 = 1000
+                    outputs = []
+                    start_time = time.time()
+
+                    print(user_text)
+                    data = pandas.read_csv(filelocation)
+
+                    for i in data['Content']:
+                        contentlist.append(str(i).lower())
+
+
+                    while True:
+                        outputs.append(most_frequent_word(contentlist[test1:test2]))
+                        if test2 == len(contentlist):
+                            break
+                        if test2 + 1000 < len(contentlist):
+                            test1,test2 = test2, test2+1000
+                        else:
+                            test1,test2 = test2, len(contentlist)
+                    
+                    for i in outputs:
+                        for j in i:
+                            if not(j[0] in wordlist):
+                                wordlist.append(j[0])
+                                wordcount.append(j[1])
+                            else:
+                                wordcount[wordlist.index(j[0])] += j[1]
+
+                    opdict = dict(zip(wordcount, wordlist))
+                    sorted_dict = OrderedDict(sorted(opdict.items()))
+                    print(sorted_dict)
+
+                    wordcount = list(sorted_dict.keys())[:]
+                    wordlist = list(sorted_dict.values())[:]
+                    wordcount,wordlist = wordcount[::-1],wordlist[::-1]
+                    wordcount = wordcount[:10]
+                    wordlist = wordlist[:10]
+
+                    calculated = True
+                    print("Calculated in ", round(time.time()-start_time, 3), "seconds!")
+
+                    fig, axes = plt.subplots(1, 1)
+                    axes.bar(wordlist, wordcount, color='green', label='Chart')
+
+                    plt.title("Most Used Word", fontsize=20 )
+                    plt.xticks(fontsize = 10)
+                    for tick in axes.xaxis.get_major_ticks()[1::2]:
+                        tick.set_pad(15)
+
+
+                    fig.patch.set_facecolor('#41454D')
+                    axes.set_facecolor('#35383E')
+                    fig.canvas.draw()
+
+                screen.blit(fig, (175, 150))
         
         if current_tab == 'Words':
             pygame.draw.rect(screen, (47,50,56), input_area, border_radius=3)
