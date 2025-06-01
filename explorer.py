@@ -387,7 +387,7 @@ while running:
                 checkbox1=pygame.draw.rect(screen, purple, (45, 200, 30, 30), border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
-            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Word Use Total", True, (250, 250, 250))
+            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Usage Over Time", True, (250, 250, 250))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
@@ -433,6 +433,7 @@ while running:
                     datelistlist = []
                     datelistlistcount = []
                     datelistlistcount2 = []
+                    datelistlistcount3 = []
                     datelistlistcountcounter = 0
                     
 
@@ -450,13 +451,23 @@ while running:
                         if not(k in datelistlist):
                             datelistlist.append(k)
                             datelistlistcount.append(0)
+                            datelistlistcount3.append(0)
                     for l in range(len(datelist)):
                         if authorlist[l].lower() == user_text2.lower():
                             if word_in_text(user_text, str(contentlist[l])):
                                 datelistlistcount[datelistlist.index(datelist[l])] += 1
+                                datelistlistcount3[datelistlist.index(datelist[l])] += 1
+                                try:
+                                    datelistlistcount[datelistlist.index(datelist[l])+1] +=1
+                                except:
+                                    pass
+                                try:
+                                    datelistlistcount[datelistlist.index(datelist[l])-1] +=1
+                                except:
+                                    pass
                     print(datelistlistcount, len(datelistlistcount))
 
-                    for m in datelistlistcount:
+                    for m in datelistlistcount3:
                         datelistlistcountcounter += m
                         datelistlistcount2.append(datelistlistcountcounter)
 
@@ -473,7 +484,9 @@ while running:
                         #axes.plot(datelistlist, datelistlistcount, color='green', label='Chart')
                         axes.scatter(datelistlist, datelistlistcount, marker='X')
 
-                    plt.title("Usage over time: "+user_text, fontsize=20 )
+                    plt.title("Uses per day: "+user_text, fontsize=20 )
+                    if toggled_checkboxes[3]:
+                        plt.title("Rate over time: "+user_text, fontsize=20 )
                     plt.xticks(fontsize = 10)
 
                     divnum = int(len(datelistlist)//5.1)
