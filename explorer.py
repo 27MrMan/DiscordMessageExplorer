@@ -39,7 +39,7 @@ calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
 
-toggled_checkboxes = [False, False, False]
+toggled_checkboxes = [False, False, False, False]
 
 #gotta make this configurable
 filelocation = "data.csv"
@@ -48,6 +48,7 @@ data = ''
 purple = (88,101,242)
 contentlist = []
 authorlist = []
+datelistlistcountcounter = 0
 messagecount = []
 listofauthors = []
 listofauthorscount = []
@@ -380,18 +381,18 @@ while running:
             pygame.draw.rect(screen, (47,50,56), unameinput_area, border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), unameinput_area, 2, 3)
 
-            if toggled_checkboxes[0] == False:
+            if toggled_checkboxes[3] == False:
                 checkbox1=pygame.draw.rect(screen, (47, 50, 56), (45, 200, 30, 30), border_radius=3)
             else: 
                 checkbox1=pygame.draw.rect(screen, purple, (45, 200, 30, 30), border_radius=3)
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
-            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Normalize\n Plot", True, (250, 250, 250))
+            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Word Use Total", True, (250, 250, 250))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
                 recentToggle = round(time.time(), 2)
-                toggled_checkboxes[0] = not(toggled_checkboxes[0])
+                toggled_checkboxes[3] = not(toggled_checkboxes[3])
 
             if round(time.time())%2==0 and active:
                 text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
@@ -431,6 +432,9 @@ while running:
                     datelist = []
                     datelistlist = []
                     datelistlistcount = []
+                    datelistlistcount2 = []
+                    datelistlistcountcounter = 0
+                    
 
                     calculated = True
                     print(user_text, user_text2)
@@ -452,18 +456,28 @@ while running:
                                 datelistlistcount[datelistlist.index(datelist[l])] += 1
                     print(datelistlistcount, len(datelistlistcount))
 
+                    for m in datelistlistcount:
+                        datelistlistcountcounter += m
+                        datelistlistcount2.append(datelistlistcountcounter)
+
                     start_time = time.time()-start_time
 
                     print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
                             
 
-                    fig, axes = plt.subplots(1, 1)
+                    fig, axes = plt.subplots(1, 1, figsize=(9, 4))
                     #i think plot here...?
-                    axes.plot(datelist, listofauthorscount, color='green', label='Chart')
+                    if toggled_checkboxes[3]:
+                        axes.plot(datelistlist, datelistlistcount2, color='green', label='Chart')
+                    else:
+                        #axes.plot(datelistlist, datelistlistcount, color='green', label='Chart')
+                        axes.scatter(datelistlist, datelistlistcount, marker='X')
 
-                    plt.title("Times used: "+user_text, fontsize=20 )
+                    plt.title("Usage over time: "+user_text, fontsize=20 )
                     plt.xticks(fontsize = 10)
-                    for tick in axes.xaxis.get_major_ticks()[1::2]:
+
+                    divnum = int(len(datelistlist)//5.1)
+                    for tick in axes.xaxis.get_major_ticks()[1::divnum]:
                         tick.set_pad(15)
 
 
@@ -471,7 +485,7 @@ while running:
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
 
-                screen.blit(fig, (175, 150))
+                screen.blit(fig, (50, 234))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
