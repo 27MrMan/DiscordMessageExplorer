@@ -26,12 +26,15 @@ pygame.display.set_caption("Discord Message Explorer")
 start_time = 0
 timing_thing = 0
 input_area = pygame.Rect(50, 100, 900, 39)
+unameinput_area = pygame.Rect(50, 145, 900, 39)
 user_text = ''
+user_text2 = ''
 current_menu = "Start"
 current_current_tab = ''
 current_tab = "landing"
 mousedown = False
 active = True
+active2 = False
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
@@ -39,7 +42,7 @@ recentToggle = 0
 toggled_checkboxes = [False, False, False]
 
 #gotta make this configurable
-filelocation = "C:/Users/UNNIKRISHNAN/Documents/AI Traiing Data/GC_Dec_2024.csv"
+filelocation = "data.csv"
 data = ''
 #discord purple
 purple = (88,101,242)
@@ -124,7 +127,8 @@ while running:
         topbar_rect = pygame.draw.rect(screen, (47, 50, 56), (0, 0, 1000, 70))
         draw_tab(10, 9, 'Words')
         draw_tab(140, 9, 'Users')
-        draw_tab(270, 9, 'Messages')
+        draw_tab(260, 9, 'Messages')
+        draw_tab(450, 9, 'Compare')
         backgroundfill = pygame.draw.rect(screen, (53, 56, 63), (0, 70, 1000, 600))
         pygame.draw.line(screen, purple, (0, 70), (1000, 70), width=2)
 
@@ -369,18 +373,125 @@ while running:
 
                 screen.blit(fig, (175, 150))
 
+        if current_tab == 'Compare':
+            pygame.draw.rect(screen, (47,50,56), input_area, border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), input_area, 2, 3)
+
+            pygame.draw.rect(screen, (47,50,56), unameinput_area, border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), unameinput_area, 2, 3)
+
+            if toggled_checkboxes[0] == False:
+                checkbox1=pygame.draw.rect(screen, (47, 50, 56), (45, 200, 30, 30), border_radius=3)
+            else: 
+                checkbox1=pygame.draw.rect(screen, purple, (45, 200, 30, 30), border_radius=3)
+            pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
+
+            checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Normalize\n Plot", True, (250, 250, 250))
+            screen.blit(checkbox1_text, (80, 200, 30, 30))
+
+            if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
+                recentToggle = round(time.time(), 2)
+                toggled_checkboxes[0] = not(toggled_checkboxes[0])
+
+            if round(time.time())%2==0 and active:
+                text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
+            elif round(time.time())%2!=0 and active:
+                text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "|", True, (255, 215, 0))
+            else:
+                text_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text + "", True, (255, 215, 0))
+
+            if round(time.time())%2==0 and active2:
+                uinputtext_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text2 + "", True, (255, 215, 0))
+            elif round(time.time())%2!=0 and active2:
+                uinputtext_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text2 + "|", True, (255, 215, 0))
+            else:
+                uinputtext_surface = pygame.font.Font('assets/Ubuntu-Medium.ttf', 35).render(user_text2 + "", True, (255, 215, 0))
+
+
+            screen.blit(text_surface, (input_area.x + 5, input_area.y - 1))
+            screen.blit(uinputtext_surface, (unameinput_area.x + 5, unameinput_area.y - 1))
+            # for long(er) answers
+            input_area.w = max(max(100, text_surface.get_width() + 10),900)
+            unameinput_area.w = max(max(100, uinputtext_surface.get_width() + 10),900)
+
+            if mousedown:
+                if input_area.collidepoint(pygame.mouse.get_pos()):
+                    active = True
+                    active2 = False
+                elif unameinput_area.collidepoint(pygame.mouse.get_pos()):
+                    active2 = True
+                    active = False
+
+            if not(active or active2):
+                if not(calculated):
+                    #if user wants to see more than one plot
+                    contentlist = []
+                    authorlist = []
+                    start_time = time.time()
+                    datelist = []
+                    datelistlist = []
+                    datelistlistcount = []
+
+                    calculated = True
+                    print(user_text, user_text2)
+                    data = pandas.read_csv(filelocation)
+
+                    for i in data['Content']:
+                        contentlist.append(i)
+                    for j in data['Date']:
+                        datelist.append(j[:10])
+                    for m in data['Author']:
+                        authorlist.append(m)
+                    for k in datelist:
+                        if not(k in datelistlist):
+                            datelistlist.append(k)
+                            datelistlistcount.append(0)
+                    for l in range(len(datelist)):
+                        if authorlist[l].lower() == user_text2.lower():
+                            if word_in_text(user_text, str(contentlist[l])):
+                                datelistlistcount[datelistlist.index(datelist[l])] += 1
+                    print(datelistlistcount, len(datelistlistcount))
+
+                    start_time = time.time()-start_time
+
+                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
+                            
+
+                    fig, axes = plt.subplots(1, 1)
+                    #i think plot here...?
+                    axes.plot(datelist, listofauthorscount, color='green', label='Chart')
+
+                    plt.title("Times used: "+user_text, fontsize=20 )
+                    plt.xticks(fontsize = 10)
+                    for tick in axes.xaxis.get_major_ticks()[1::2]:
+                        tick.set_pad(15)
+
+
+                    fig.patch.set_facecolor('#41454D')
+                    axes.set_facecolor('#35383E')
+                    fig.canvas.draw()
+
+                screen.blit(fig, (175, 150))
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running=False
             if event.type == pygame.KEYDOWN:
                 # Check for backspace when user has room temperature IQ (in Fahrenheit)
                 if event.key == pygame.K_BACKSPACE:
-                    user_text = user_text[:-1]
+                    if active2:
+                        user_text2 = user_text2[:-1]
+                    else:
+                        user_text = user_text[:-1]
                 elif event.key == pygame.K_RETURN:
                     active = False
+                    active2 = False
                     calculated = False
                 else:
-                    user_text += event.unicode
+                    if active2:
+                        user_text2 += event.unicode
+                    else:
+                        user_text += event.unicode
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mousedown = True
             if event.type == pygame.MOUSEBUTTONUP:
