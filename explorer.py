@@ -130,6 +130,7 @@ while running:
         draw_tab(140, 9, 'Users')
         draw_tab(260, 9, 'Messages')
         draw_tab(450, 9, 'Compare')
+
         backgroundfill = pygame.draw.rect(screen, (53, 56, 63), (0, 70, 1000, 600))
         pygame.draw.line(screen, purple, (0, 70), (1000, 70), width=2)
 
