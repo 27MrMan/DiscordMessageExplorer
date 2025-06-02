@@ -7,18 +7,19 @@ Project currently just started. Very much incomplete.
 
 # Status
 
-Currently, objectives are complete. Feel free to create an issue and suggest new plots :)
-3rd working version of the program is complete :D Now, in the program you can do the following:
+Currently, most objectives are complete. Feel free to create an issue and suggest new plots :)
+However, I am slowly working in the background to create a CSV Parser in Rust (current one is in python and is quite slow), probably will be added in the next major release.
 
 # How to use
 
-- Download the python file and assets folder, and keep those two and the csv file in the same direcotry.
-- Download the requrired packages, and then somehow acquire a .csv file with all the discord messages of a group DM, etc.
-- Then, rename that file to 'messages.csv'
+- Download the source code, and extract into one folder.
+- Download the requrired packages with pip, and then somehow acquire a .csv file with all the discord messages of a group DM, etc (I used DiscordChatExporter with .csv).
+- Then, rename that file to 'data.csv'
 - Run the program, and in the 'Words' tab, you can enter any word, and it will display a chart with the statics of how much each user uses that word.
-- If a user isnt on that graph, it means they did not use that word. 
+- Similarily, you can play around with the other tabs and checkboxes, or check the commit messages to see exactly what they do.
 
 # Completed Objectives
 - Most messages sent leaderboard
 - Message occurance per total messages
 - Most used word leaderboard
+- Rate of usage over time + usage overview
