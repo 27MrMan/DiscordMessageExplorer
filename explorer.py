@@ -487,6 +487,8 @@ while running:
                     plt.title("Uses per day: "+user_text, fontsize=20 )
                     if toggled_checkboxes[3]:
                         plt.title("Rate over time: "+user_text, fontsize=20 )
+                    else:
+                        plt.gca().set_yticklabels([])
                     plt.xticks(fontsize = 10)
 
                     divnum = int(len(datelistlist)//5.1)
