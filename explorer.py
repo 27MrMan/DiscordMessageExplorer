@@ -368,6 +368,7 @@ while running:
                     for tick in axes.xaxis.get_major_ticks()[1::2]:
                         tick.set_pad(15)
 
+                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(time.time()-start_time, 3), "seconds!")
 
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
