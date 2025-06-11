@@ -18,6 +18,9 @@ However, I am slowly working in the background to create a CSV Parser in Rust (c
 - Run the program, and in the 'Words' tab, you can enter any word, and it will display a chart with the statics of how much each user uses that word.
 - Similarily, you can play around with the other tabs and checkboxes, or check the commit messages to see exactly what they do.
 
+# Build Instructions
+- The python part does not need any building, but for the rust program, just run 'cargo build --release' while 'cd'd into the /csvreader/ directory.
+
 # Completed Objectives
 - Most messages sent leaderboard
 - Message occurance per total messages
