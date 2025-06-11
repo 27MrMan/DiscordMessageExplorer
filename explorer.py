@@ -15,12 +15,18 @@ from collections import Counter
 from functools import reduce
 #for sorting dictionaries
 from collections import OrderedDict
+#for running the rust-created executable
+import subprocess
 
 #window setup
 pygame.init()
 width,height = 1000,650
 screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
+
+#Rust-compiled Executables! :D
+word_analyzer = './users-run'
+#^^ copy the executable to the main folder for release
 
 #variables
 start_time = 0
@@ -301,7 +307,7 @@ while running:
                     if toggled_checkboxes[0]:
                         for i in range(len(listofauthorscount)):
                             listofauthorscount[i] /= messagecount[i]
-                            listofauthorscount[i] *= 100
+                            listofauthorscount[i] *= 100 
 
                     fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
@@ -336,8 +342,10 @@ while running:
 
             if not(active):
                 if not(calculated):
+                    calculated = True
+                    start_time=time.time()
                     #if user wants to see more than one plot
-                    contentlist = []
+                    '''contentlist = []
                     authorlist = []
                     listofauthors = []
                     listofauthorscount = []
@@ -358,7 +366,7 @@ while running:
                         authorlist.append(j)
 
                     for k in authorlist:
-                        listofauthorscount[listofauthors.index(k)] += 1
+                        listofauthorscount[listofauthors.index(k)] += 1'''
 
                     fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
@@ -367,12 +375,16 @@ while running:
                     plt.xticks(fontsize = 10)
                     for tick in axes.xaxis.get_major_ticks()[1::2]:
                         tick.set_pad(15)
-
-                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(time.time()-start_time, 3), "seconds!")
+                    
+                    result = subprocess.run([word_analyzer], capture_output=True, text=True)
+                    print(result.stdout)
 
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+
+                    print("Finished calculation in", round(time.time()-start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
 
