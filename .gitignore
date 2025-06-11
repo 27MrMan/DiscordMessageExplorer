@@ -1,4 +1,5 @@
 data.csv
 *.csv
 testing.py
-csvreader/target/*
+users-reader/target/*
+messages-reader/target/*
