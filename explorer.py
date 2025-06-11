@@ -368,17 +368,20 @@ while running:
                     for k in authorlist:
                         listofauthorscount[listofauthors.index(k)] += 1'''
 
+                    result = subprocess.run([word_analyzer], capture_output=True, text=True)
+                    #print(result.stdout)
+                    stout= result.stdout.split('\n')
+                    print(stout)
+                    
+
                     fig, axes = plt.subplots(1, 1)
-                    axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
+                    axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
 
                     plt.title("Messages Sent", fontsize=20 )
                     plt.xticks(fontsize = 10)
                     for tick in axes.xaxis.get_major_ticks()[1::2]:
                         tick.set_pad(15)
                     
-                    result = subprocess.run([word_analyzer], capture_output=True, text=True)
-                    print(result.stdout)
-
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
