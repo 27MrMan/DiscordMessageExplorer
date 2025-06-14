@@ -26,7 +26,7 @@ pygame.display.set_caption("Discord Message Explorer")
 
 #Rust-compiled Executables! :D
 word_analyzer = './users-run'
-#^^ copy the executable to the main folder for release
+message_analyzer = './messages-run'
 
 #variables
 start_time = 0
@@ -161,7 +161,10 @@ while running:
 
             if not(active):
                 if not(calculated):
-                    contentlist = []
+                    calculated = True
+                    start_time = time.time()
+
+                    '''contentlist = []
                     wordlist = []
                     wordcount = []
                     test1 = 0
@@ -204,10 +207,15 @@ while running:
                     wordlist = wordlist[:10]
 
                     calculated = True
-                    print("Calculated in ", round(time.time()-start_time, 3), "seconds!")
+                    print("Calculated in ", round(time.time()-start_time, 3), "seconds!")'''
+
+                    result = subprocess.run([message_analyzer], capture_output=True, text=True)
+                    #print(result.stdout)
+                    stout= result.stdout.split('\n')
+                    print(stout)                    
 
                     fig, axes = plt.subplots(1, 1)
-                    axes.bar(wordlist, wordcount, color='green', label='Chart')
+                    axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
 
                     plt.title("Most Used Word", fontsize=20 )
                     plt.xticks(fontsize = 10)
@@ -218,6 +226,9 @@ while running:
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+                    start_time = time.time() - start_time
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
         
@@ -255,17 +266,18 @@ while running:
 
             if not(active):
                 if not(calculated):
-                    #if user wants to see more than one plot
-                    contentlist = []
+                    calculated = True
+                    start_time = time.time()
+                    #CURRENTLY BROKEN, RUST VERSION UNDER CONSTRUCTION
+
+                    '''contentlist = []
                     authorlist = []
                     listofauthors = []
                     listofauthorscount = []
                     messagecount = []
                     authorlisthelper = {}
                     newauthorlisthelper = {}
-                    start_time = time.time()
 
-                    calculated = True
                     print(user_text)
                     data = pandas.read_csv(filelocation)
 
@@ -286,12 +298,13 @@ while running:
 
                     for j in authorlisthelper.keys():
                         if authorlisthelper[j] != 0 or len(listofauthors) < 5:
-                            newauthorlisthelper.update({j:authorlisthelper[j]})
+                            newauthorlisthelper.update({j:authorlisthelper[j]})'''
+                    
+                    #add rust program here
                     
                     start_time = time.time()-start_time
 
-                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
-                    print(newauthorlisthelper)
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
                             
                     listofauthors = list(newauthorlisthelper.keys())
                     listofauthorscount = list(newauthorlisthelper.values())
@@ -344,7 +357,7 @@ while running:
                 if not(calculated):
                     calculated = True
                     start_time=time.time()
-                    #if user wants to see more than one plot
+                    #previous method
                     '''contentlist = []
                     authorlist = []
                     listofauthors = []
@@ -368,6 +381,7 @@ while running:
                     for k in authorlist:
                         listofauthorscount[listofauthors.index(k)] += 1'''
 
+                    #new method
                     result = subprocess.run([word_analyzer], capture_output=True, text=True)
                     #print(result.stdout)
                     stout= result.stdout.split('\n')

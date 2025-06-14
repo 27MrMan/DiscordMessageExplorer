@@ -1,49 +1,35 @@
-use std::time::{SystemTime};
+use std::collections::HashMap;
+use std::time::SystemTime;
 
-//i just copied this from the other one, ill work on it eventually 
 fn main() {
-    let mut rdr = csv::Reader::from_path("data_copy.csv").expect("wher file");
-    //let mut limit = 150;
-    //let mut print:bool = true;
-    //let mut lentest = 0;
-    let mut users: Vec<String> = Vec::new();
-    let mut usercount: Vec<u64> = Vec::new();
+    let mut rdr = csv::Reader::from_path("data.csv").expect("wher file");
+    let mut word_count: HashMap<String, u64> = HashMap::new();
 
     let starttime = SystemTime::now();
-    /* 
-    for i in rdr.records() {
-        let line = i.expect("wher record");
-        if print{
-        println!("{:?}", line);
-        println!(" ");}
 
-        limit -=1;
-        lentest += 1;
+    for result in rdr.records() {
+        let record = result.expect("wher record");
+        let message = &record[3]; // Change index if message is in a different column
 
-        if limit == 0 {
-            print = false;
+        for word in message.split_whitespace() {
+            let word = word.to_lowercase();
+            *word_count.entry(word).or_insert(0) += 1;
         }
-
-
-    } */
-
-    for i in rdr.records() {
-        let line = i.expect("wher record");
-        let cuser = &line[1].to_string();
-        if !users.contains(cuser) {
-            users.push(String::from(cuser));
-            usercount.push(0);
-        }
-        for i in users.iter() {
-            if i == cuser {
-                let index = users.iter().position(|x| x == cuser).unwrap();
-                usercount[index] += 1;
-            }
-        }
-
     }
-    //println!("Total records processed: {}", lentest);
-    println!("{:?}", users);
-    println!("{:?}", usercount);
+
+    // Find the top 10 most common words
+    let mut word_vec: Vec<(&String, &u64)> = word_count.iter().collect();
+    word_vec.sort_by(|a, b| b.1.cmp(a.1)); // Sort descending by count
+
+    let mut words: Vec<String> = Vec::new();
+    let mut counts: Vec<u64> = Vec::new();
+
+    for (_i, (word, count)) in word_vec.iter().take(10).enumerate() {
+        words.push(String::from(*word));
+        counts.push(u64::from(**count));
+    }
+    println!("{:?}", words);
+    println!("{:?}", counts);
+
     println!("Time Elapsed: {:?}", starttime.elapsed());
 }

@@ -1,7 +1,7 @@
 use std::time::{SystemTime};
 
 fn main() {
-    let mut rdr = csv::Reader::from_path("data_copy.csv").expect("wher file");
+    let mut rdr = csv::Reader::from_path("data.csv").expect("wher file");
     //let mut limit = 150;
     //let mut print:bool = true;
     //let mut lentest = 0;
