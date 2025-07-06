@@ -3,3 +3,5 @@ data.csv
 testing.py
 users-reader/target/*
 messages-reader/target/*
+words-reader/target/*
+user_text.txt

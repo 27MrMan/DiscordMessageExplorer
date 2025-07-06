@@ -25,8 +25,10 @@ screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
 
 #Rust-compiled Executables! :D
-word_analyzer = './users-run'
+users_analyzer = './users-run'
 message_analyzer = './messages-run'
+words_analyzer = './words-run'
+
 
 #variables
 start_time = 0
@@ -164,51 +166,6 @@ while running:
                     calculated = True
                     start_time = time.time()
 
-                    '''contentlist = []
-                    wordlist = []
-                    wordcount = []
-                    test1 = 0
-                    test2 = 1000
-                    outputs = []
-                    start_time = time.time()
-
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
-
-                    for i in data['Content']:
-                        contentlist.append(str(i).lower())
-
-
-                    while True:
-                        outputs.append(most_frequent_word(contentlist[test1:test2]))
-                        if test2 == len(contentlist):
-                            break
-                        if test2 + 1000 < len(contentlist):
-                            test1,test2 = test2, test2+1000
-                        else:
-                            test1,test2 = test2, len(contentlist)
-                    
-                    for i in outputs:
-                        for j in i:
-                            if not(j[0] in wordlist):
-                                wordlist.append(j[0])
-                                wordcount.append(j[1])
-                            else:
-                                wordcount[wordlist.index(j[0])] += j[1]
-
-                    opdict = dict(zip(wordcount, wordlist))
-                    sorted_dict = OrderedDict(sorted(opdict.items()))
-                    print(sorted_dict)
-
-                    wordcount = list(sorted_dict.keys())[:]
-                    wordlist = list(sorted_dict.values())[:]
-                    wordcount,wordlist = wordcount[::-1],wordlist[::-1]
-                    wordcount = wordcount[:10]
-                    wordlist = wordlist[:10]
-
-                    calculated = True
-                    print("Calculated in ", round(time.time()-start_time, 3), "seconds!")'''
-
                     result = subprocess.run([message_analyzer], capture_output=True, text=True)
                     #print(result.stdout)
                     stout= result.stdout.split('\n')
@@ -268,61 +225,30 @@ while running:
                 if not(calculated):
                     calculated = True
                     start_time = time.time()
-                    #CURRENTLY BROKEN, RUST VERSION UNDER CONSTRUCTION
 
-                    '''contentlist = []
-                    authorlist = []
-                    listofauthors = []
-                    listofauthorscount = []
-                    messagecount = []
-                    authorlisthelper = {}
-                    newauthorlisthelper = {}
-
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
-
-                    for i in data['Content']:
-                        contentlist.append(i)
-                    for j in data['Author']:
-                        if not(j in listofauthors):
-                            listofauthors.append(j)
-                            listofauthorscount.append(0)
-                        authorlist.append(j)
-                    for k in contentlist:
-                        if word_in_text(user_text, str(k)):
-                            #be careful trying to understand this
-                            listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
-
-                    for i in range(len(listofauthors)):
-                        authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
-
-                    for j in authorlisthelper.keys():
-                        if authorlisthelper[j] != 0 or len(listofauthors) < 5:
-                            newauthorlisthelper.update({j:authorlisthelper[j]})'''
+                    with open("user_text.txt", "w") as file:
+                        file.write(str(user_text))
                     
-                    #add rust program here
-                    
-                    start_time = time.time()-start_time
+                    result = subprocess.run([words_analyzer], capture_output=True, text=True)
 
-                    print("Finished calculation in", round(start_time, 3), "seconds!")
-                            
-                    listofauthors = list(newauthorlisthelper.keys())
-                    listofauthorscount = list(newauthorlisthelper.values())
+                    stout= result.stdout.split('\n')
+                    print(stout)
+                    messagecount = eval(stout[2])
 
-                    for i in range(len(listofauthors)):
-                        messagecount.append(0)
-                    for i in authorlist:
-                        if i in listofauthors:
-                            messagecount[listofauthors.index(i)] += 1
-
-                    print(messagecount)
+                    fig, axes = plt.subplots(1, 1)
+                    #axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
+                
+                    listofauthors = eval(stout[0])
+                    listofauthorscount = eval(stout[1])
 
                     if toggled_checkboxes[0]:
                         for i in range(len(listofauthorscount)):
-                            listofauthorscount[i] /= messagecount[i]
-                            listofauthorscount[i] *= 100 
+                            try:
+                                listofauthorscount[i] /= messagecount[i]
+                                listofauthorscount[i] *= 100
+                            except ZeroDivisionError:
+                                listofauthorscount[i] = 0
 
-                    fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
 
                     plt.title("Times used: "+user_text, fontsize=20 )
@@ -334,6 +260,10 @@ while running:
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+                    start_time = time.time()-start_time
+
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
 
@@ -382,7 +312,7 @@ while running:
                         listofauthorscount[listofauthors.index(k)] += 1'''
 
                     #new method
-                    result = subprocess.run([word_analyzer], capture_output=True, text=True)
+                    result = subprocess.run([users_analyzer], capture_output=True, text=True)
                     #print(result.stdout)
                     stout= result.stdout.split('\n')
                     print(stout)

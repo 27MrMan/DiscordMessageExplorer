@@ -9,7 +9,7 @@ fn main() {
 
     for result in rdr.records() {
         let record = result.expect("wher record");
-        let message = &record[3]; // Change index if message is in a different column
+        let message = &record[3]; 
 
         for word in message.split_whitespace() {
             let word = word.to_lowercase();
