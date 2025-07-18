@@ -20,7 +20,7 @@ import subprocess
 
 #window setup
 pygame.init()
-width,height = 1000,650
+width,height = 1000,690
 screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
 
@@ -43,6 +43,7 @@ current_tab = "landing"
 mousedown = False
 active = True
 active2 = False
+clear = False
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
@@ -200,6 +201,7 @@ while running:
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
             checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Normalize\n Plot", True, (250, 250, 250))
+            checkbox1_text_rect = checkbox1_text.get_rect(center=(120, 215))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
@@ -349,6 +351,7 @@ while running:
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
             checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Usage Over Time", True, (250, 250, 250))
+            checkbox1_text_rect = checkbox1_text.get_rect(center=(135, 215))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
@@ -462,6 +465,61 @@ while running:
                     fig.canvas.draw()
 
                 screen.blit(fig, (50, 234))
+
+        tooltip_rect = pygame.draw.rect(screen, (48, 51, 57), (0, 648, 1000, 30))
+
+        #mega case-matcher >:)
+
+        match current_tab:
+            case 'Messages':
+                if checkbox3.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Run the analyzer", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+
+            case 'Words':
+                if checkbox1.collidepoint(pygame.mouse.get_pos()) or checkbox1_text_rect.collidepoint(pygame.mouse.get_pos()): #or hover over text 
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Divide the values by the number of messages sent per user", True, (255, 255, 255))
+                    clear = False
+                elif input_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the word you want to search for", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+            
+            case 'Users':
+                if checkbox2.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Run the analyzer", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+
+            case 'Compare':
+                if checkbox1.collidepoint(pygame.mouse.get_pos()) or checkbox1_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Show a line graph of the usage of the word", True, (255, 255, 255))
+                    clear = False
+                elif input_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the word you want to search for", True, (255, 255, 255))
+                    clear = False
+                elif unameinput_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the user whose usage history you want to check", True, (255, 255, 255))
+                    clear = False
+                else:
+                    clear = True
+
+            case other:
+                tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("", True, (255, 255, 255))
+
+        if clear:
+            tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("", True, (255, 255, 255))
+        screen.blit(tooltip_text, tooltip_rect.move(0,4))
+
+
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
