@@ -28,6 +28,7 @@ pygame.display.set_caption("Discord Message Explorer")
 users_analyzer = './users-run'
 message_analyzer = './messages-run'
 words_analyzer = './words-run'
+compare_analyzer = './compare-run'
 
 
 #variables
@@ -389,51 +390,32 @@ while running:
 
             if not(active or active2):
                 if not(calculated):
-                    #if user wants to see more than one plot
-                    contentlist = []
-                    authorlist = []
+                    with open("compare_user_text1.txt", "w") as file:
+                        file.write(str(user_text))
+                    with open("compare_user_text2.txt", "w") as file:
+                        file.write(str(user_text2))
+
                     start_time = time.time()
-                    datelist = []
-                    datelistlist = []
+
                     datelistlistcount = []
                     datelistlistcount2 = []
-                    datelistlistcount3 = []
-                    datelistlistcountcounter = 0
-                    
+
 
                     calculated = True
                     print(user_text, user_text2)
-                    data = pandas.read_csv(filelocation)
 
-                    for i in data['Content']:
-                        contentlist.append(i)
-                    for j in data['Date']:
-                        datelist.append(j[:10])
-                    for m in data['Author']:
-                        authorlist.append(m)
-                    for k in datelist:
-                        if not(k in datelistlist):
-                            datelistlist.append(k)
-                            datelistlistcount.append(0)
-                            datelistlistcount3.append(0)
-                    for l in range(len(datelist)):
-                        if authorlist[l].lower() == user_text2.lower():
-                            if word_in_text(user_text, str(contentlist[l])):
-                                datelistlistcount[datelistlist.index(datelist[l])] += 1
-                                datelistlistcount3[datelistlist.index(datelist[l])] += 1
-                                try:
-                                    datelistlistcount[datelistlist.index(datelist[l])+1] +=1
-                                except:
-                                    pass
-                                try:
-                                    datelistlistcount[datelistlist.index(datelist[l])-1] +=1
-                                except:
-                                    pass
+                    result = subprocess.run([compare_analyzer], capture_output=True, text=True)
+
+                    stout= result.stdout.split('\n')
+                    print(stout)
+
+                    fig, axes = plt.subplots(1, 1)
+                
+                    datelistlistcount = eval(stout[0])
+                    datelistlistcount2 = eval(stout[1])
+                    datelistlist = eval(stout[2])
+
                     print(datelistlistcount, len(datelistlistcount))
-
-                    for m in datelistlistcount3:
-                        datelistlistcountcounter += m
-                        datelistlistcount2.append(datelistlistcountcounter)
 
                     start_time = time.time()-start_time
 
@@ -443,6 +425,7 @@ while running:
                     fig, axes = plt.subplots(1, 1, figsize=(9, 4))
                     #i think plot here...?
                     if toggled_checkboxes[3]:
+                        datelistlist=datelistlist[1:]
                         axes.plot(datelistlist, datelistlistcount2, color='green', label='Chart')
                     else:
                         #axes.plot(datelistlist, datelistlistcount, color='green', label='Chart')

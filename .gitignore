@@ -4,4 +4,7 @@ testing.py
 users-reader/target/*
 messages-reader/target/*
 words-reader/target/*
+compare-reader/target/*
 user_text.txt
+compare_user_text1.txt
+compare_user_text2.txt
