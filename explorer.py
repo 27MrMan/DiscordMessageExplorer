@@ -15,12 +15,21 @@ from collections import Counter
 from functools import reduce
 #for sorting dictionaries
 from collections import OrderedDict
+#for running the rust-created executable
+import subprocess
 
 #window setup
 pygame.init()
-width,height = 1000,650
+width,height = 1000,690
 screen = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Discord Message Explorer")
+
+#Rust-compiled Executables! :D
+users_analyzer = './users-run'
+message_analyzer = './messages-run'
+words_analyzer = './words-run'
+compare_analyzer = './compare-run'
+
 
 #variables
 start_time = 0
@@ -35,6 +44,7 @@ current_tab = "landing"
 mousedown = False
 active = True
 active2 = False
+clear = False
 calculated = False
 recentToggle = 0
 #for checking if each checkbox has been clicked.
@@ -155,53 +165,16 @@ while running:
 
             if not(active):
                 if not(calculated):
-                    contentlist = []
-                    wordlist = []
-                    wordcount = []
-                    test1 = 0
-                    test2 = 1000
-                    outputs = []
+                    calculated = True
                     start_time = time.time()
 
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
-
-                    for i in data['Content']:
-                        contentlist.append(str(i).lower())
-
-
-                    while True:
-                        outputs.append(most_frequent_word(contentlist[test1:test2]))
-                        if test2 == len(contentlist):
-                            break
-                        if test2 + 1000 < len(contentlist):
-                            test1,test2 = test2, test2+1000
-                        else:
-                            test1,test2 = test2, len(contentlist)
-                    
-                    for i in outputs:
-                        for j in i:
-                            if not(j[0] in wordlist):
-                                wordlist.append(j[0])
-                                wordcount.append(j[1])
-                            else:
-                                wordcount[wordlist.index(j[0])] += j[1]
-
-                    opdict = dict(zip(wordcount, wordlist))
-                    sorted_dict = OrderedDict(sorted(opdict.items()))
-                    print(sorted_dict)
-
-                    wordcount = list(sorted_dict.keys())[:]
-                    wordlist = list(sorted_dict.values())[:]
-                    wordcount,wordlist = wordcount[::-1],wordlist[::-1]
-                    wordcount = wordcount[:10]
-                    wordlist = wordlist[:10]
-
-                    calculated = True
-                    print("Calculated in ", round(time.time()-start_time, 3), "seconds!")
+                    result = subprocess.run([message_analyzer], capture_output=True, text=True)
+                    #print(result.stdout)
+                    stout= result.stdout.split('\n')
+                    print(stout)                    
 
                     fig, axes = plt.subplots(1, 1)
-                    axes.bar(wordlist, wordcount, color='green', label='Chart')
+                    axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
 
                     plt.title("Most Used Word", fontsize=20 )
                     plt.xticks(fontsize = 10)
@@ -212,6 +185,9 @@ while running:
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+                    start_time = time.time() - start_time
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
         
@@ -226,6 +202,7 @@ while running:
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
             checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Normalize\n Plot", True, (250, 250, 250))
+            checkbox1_text_rect = checkbox1_text.get_rect(center=(120, 215))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
@@ -249,61 +226,32 @@ while running:
 
             if not(active):
                 if not(calculated):
-                    #if user wants to see more than one plot
-                    contentlist = []
-                    authorlist = []
-                    listofauthors = []
-                    listofauthorscount = []
-                    messagecount = []
-                    authorlisthelper = {}
-                    newauthorlisthelper = {}
+                    calculated = True
                     start_time = time.time()
 
-                    calculated = True
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
-
-                    for i in data['Content']:
-                        contentlist.append(i)
-                    for j in data['Author']:
-                        if not(j in listofauthors):
-                            listofauthors.append(j)
-                            listofauthorscount.append(0)
-                        authorlist.append(j)
-                    for k in contentlist:
-                        if word_in_text(user_text, str(k)):
-                            #be careful trying to understand this
-                            listofauthorscount[listofauthors.index(authorlist[contentlist.index(k)])] += 1
-
-                    for i in range(len(listofauthors)):
-                        authorlisthelper.update({listofauthors[i]:listofauthorscount[i]})
-
-                    for j in authorlisthelper.keys():
-                        if authorlisthelper[j] != 0 or len(listofauthors) < 5:
-                            newauthorlisthelper.update({j:authorlisthelper[j]})
+                    with open("user_text.txt", "w") as file:
+                        file.write(str(user_text))
                     
-                    start_time = time.time()-start_time
+                    result = subprocess.run([words_analyzer], capture_output=True, text=True)
 
-                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
-                    print(newauthorlisthelper)
-                            
-                    listofauthors = list(newauthorlisthelper.keys())
-                    listofauthorscount = list(newauthorlisthelper.values())
+                    stout= result.stdout.split('\n')
+                    print(stout)
+                    messagecount = eval(stout[2])
 
-                    for i in range(len(listofauthors)):
-                        messagecount.append(0)
-                    for i in authorlist:
-                        if i in listofauthors:
-                            messagecount[listofauthors.index(i)] += 1
-
-                    print(messagecount)
+                    fig, axes = plt.subplots(1, 1)
+                    #axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
+                
+                    listofauthors = eval(stout[0])
+                    listofauthorscount = eval(stout[1])
 
                     if toggled_checkboxes[0]:
                         for i in range(len(listofauthorscount)):
-                            listofauthorscount[i] /= messagecount[i]
-                            listofauthorscount[i] *= 100
+                            try:
+                                listofauthorscount[i] /= messagecount[i]
+                                listofauthorscount[i] *= 100
+                            except ZeroDivisionError:
+                                listofauthorscount[i] = 0
 
-                    fig, axes = plt.subplots(1, 1)
                     axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
 
                     plt.title("Times used: "+user_text, fontsize=20 )
@@ -315,6 +263,10 @@ while running:
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+                    start_time = time.time()-start_time
+
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
 
@@ -336,42 +288,30 @@ while running:
 
             if not(active):
                 if not(calculated):
-                    #if user wants to see more than one plot
-                    contentlist = []
-                    authorlist = []
-                    listofauthors = []
-                    listofauthorscount = []
-                    messagecount = []
-                    authorlisthelper = {}
-                    newauthorlisthelper = {}
-                    start_time = time.time()
-
                     calculated = True
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
+                    start_time=time.time()
 
-
-                    for j in data['Author']:
-                        if not(j in listofauthors):
-                            listofauthors.append(j)
-                            listofauthorscount.append(0)
-                        authorlist.append(j)
-
-                    for k in authorlist:
-                        listofauthorscount[listofauthors.index(k)] += 1
+                    #new method
+                    result = subprocess.run([users_analyzer], capture_output=True, text=True)
+                    #print(result.stdout)
+                    stout= result.stdout.split('\n')
+                    print(stout)
+                    
 
                     fig, axes = plt.subplots(1, 1)
-                    axes.bar(listofauthors, listofauthorscount, color='green', label='Chart')
+                    axes.bar(eval(stout[0]), eval(stout[1]), color='green', label='Chart')
 
                     plt.title("Messages Sent", fontsize=20 )
                     plt.xticks(fontsize = 10)
                     for tick in axes.xaxis.get_major_ticks()[1::2]:
                         tick.set_pad(15)
-
-
+                    
                     fig.patch.set_facecolor('#41454D')
                     axes.set_facecolor('#35383E')
                     fig.canvas.draw()
+
+
+                    print("Finished calculation in", round(time.time()-start_time, 3), "seconds!")
 
                 screen.blit(fig, (175, 150))
 
@@ -389,6 +329,7 @@ while running:
             pygame.draw.rect(screen, (23, 26, 28), (45, 200, 30, 30), 2, 3)
 
             checkbox1_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 20).render("Usage Over Time", True, (250, 250, 250))
+            checkbox1_text_rect = checkbox1_text.get_rect(center=(135, 215))
             screen.blit(checkbox1_text, (80, 200, 30, 30))
 
             if checkbox1.collidepoint(pygame.mouse.get_pos()) and mousedown and round(time.time(), 2)-recentToggle > 0.3:
@@ -426,51 +367,32 @@ while running:
 
             if not(active or active2):
                 if not(calculated):
-                    #if user wants to see more than one plot
-                    contentlist = []
-                    authorlist = []
+                    with open("compare_user_text1.txt", "w") as file:
+                        file.write(str(user_text))
+                    with open("compare_user_text2.txt", "w") as file:
+                        file.write(str(user_text2))
+
                     start_time = time.time()
-                    datelist = []
-                    datelistlist = []
+
                     datelistlistcount = []
                     datelistlistcount2 = []
-                    datelistlistcount3 = []
-                    datelistlistcountcounter = 0
-                    
+
 
                     calculated = True
                     print(user_text, user_text2)
-                    data = pandas.read_csv(filelocation)
 
-                    for i in data['Content']:
-                        contentlist.append(i)
-                    for j in data['Date']:
-                        datelist.append(j[:10])
-                    for m in data['Author']:
-                        authorlist.append(m)
-                    for k in datelist:
-                        if not(k in datelistlist):
-                            datelistlist.append(k)
-                            datelistlistcount.append(0)
-                            datelistlistcount3.append(0)
-                    for l in range(len(datelist)):
-                        if authorlist[l].lower() == user_text2.lower():
-                            if word_in_text(user_text, str(contentlist[l])):
-                                datelistlistcount[datelistlist.index(datelist[l])] += 1
-                                datelistlistcount3[datelistlist.index(datelist[l])] += 1
-                                try:
-                                    datelistlistcount[datelistlist.index(datelist[l])+1] +=1
-                                except:
-                                    pass
-                                try:
-                                    datelistlistcount[datelistlist.index(datelist[l])-1] +=1
-                                except:
-                                    pass
+                    result = subprocess.run([compare_analyzer], capture_output=True, text=True)
+
+                    stout= result.stdout.split('\n')
+                    print(stout)
+
+                    fig, axes = plt.subplots(1, 1)
+                
+                    datelistlistcount = eval(stout[0])
+                    datelistlistcount2 = eval(stout[1])
+                    datelistlist = eval(stout[2])
+
                     print(datelistlistcount, len(datelistlistcount))
-
-                    for m in datelistlistcount3:
-                        datelistlistcountcounter += m
-                        datelistlistcount2.append(datelistlistcountcounter)
 
                     start_time = time.time()-start_time
 
@@ -480,6 +402,7 @@ while running:
                     fig, axes = plt.subplots(1, 1, figsize=(9, 4))
                     #i think plot here...?
                     if toggled_checkboxes[3]:
+                        datelistlist=datelistlist[1:]
                         axes.plot(datelistlist, datelistlistcount2, color='green', label='Chart')
                     else:
                         #axes.plot(datelistlist, datelistlistcount, color='green', label='Chart')
@@ -502,6 +425,61 @@ while running:
                     fig.canvas.draw()
 
                 screen.blit(fig, (50, 234))
+
+        tooltip_rect = pygame.draw.rect(screen, (48, 51, 57), (0, 648, 1000, 30))
+
+        #mega case-matcher >:)
+
+        match current_tab:
+            case 'Messages':
+                if checkbox3.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Run the analyzer", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+
+            case 'Words':
+                if checkbox1.collidepoint(pygame.mouse.get_pos()) or checkbox1_text_rect.collidepoint(pygame.mouse.get_pos()): #or hover over text 
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Divide the values by the number of messages sent per user", True, (255, 255, 255))
+                    clear = False
+                elif input_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the word you want to search for", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+            
+            case 'Users':
+                if checkbox2.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Run the analyzer", True, (255, 255, 255))
+                    clear = False
+
+                else:
+                    clear = True
+
+            case 'Compare':
+                if checkbox1.collidepoint(pygame.mouse.get_pos()) or checkbox1_text_rect.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Show a line graph of the usage of the word", True, (255, 255, 255))
+                    clear = False
+                elif input_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the word you want to search for", True, (255, 255, 255))
+                    clear = False
+                elif unameinput_area.collidepoint(pygame.mouse.get_pos()):
+                    tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("     Type the user whose usage history you want to check", True, (255, 255, 255))
+                    clear = False
+                else:
+                    clear = True
+
+            case other:
+                tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("", True, (255, 255, 255))
+
+        if clear:
+            tooltip_text = pygame.font.Font('assets/Ubuntu-Light.ttf', 18).render("", True, (255, 255, 255))
+        screen.blit(tooltip_text, tooltip_rect.move(0,4))
+
+
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
