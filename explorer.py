@@ -290,29 +290,6 @@ while running:
                 if not(calculated):
                     calculated = True
                     start_time=time.time()
-                    #previous method
-                    '''contentlist = []
-                    authorlist = []
-                    listofauthors = []
-                    listofauthorscount = []
-                    messagecount = []
-                    authorlisthelper = {}
-                    newauthorlisthelper = {}
-                    start_time = time.time()
-
-                    calculated = True
-                    print(user_text)
-                    data = pandas.read_csv(filelocation)
-
-
-                    for j in data['Author']:
-                        if not(j in listofauthors):
-                            listofauthors.append(j)
-                            listofauthorscount.append(0)
-                        authorlist.append(j)
-
-                    for k in authorlist:
-                        listofauthorscount[listofauthors.index(k)] += 1'''
 
                     #new method
                     result = subprocess.run([users_analyzer], capture_output=True, text=True)
