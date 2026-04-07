@@ -392,11 +392,11 @@ while running:
                     datelistlistcount2 = eval(stout[1])
                     datelistlist = eval(stout[2])
 
-                    print(datelistlistcount, len(datelistlistcount))
+                    #print(datelistlistcount, len(datelistlistcount))
 
                     start_time = time.time()-start_time
 
-                    print("Finished calculation of","{:,}".format(len(authorlist)), "messages in", round(start_time, 3), "seconds!")
+                    print("Finished calculation in", round(start_time, 3), "seconds!")
                             
 
                     fig, axes = plt.subplots(1, 1, figsize=(9, 4))

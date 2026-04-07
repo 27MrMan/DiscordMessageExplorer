@@ -54,17 +54,29 @@ fn main(){
             futureadd = false;
         }
 
-        if (record[1].to_string() == inputuser) && record[3].split_whitespace().any(|word| word.to_lowercase() == inputword){
-            datecounter3[index]+=1;
-            datecounter1[index]+=1;
+        if inputword == "*" {
+            if record[1].to_string() == inputuser{
+                datecounter3[index]+=1;
+                datecounter1[index]+=1;
 
-            if index>0 {
-                datecounter1[index-1]+=1;
+                if index>0 {
+                    datecounter1[index-1]+=1;
+                }
+
+                futureadd = true;
             }
+        } else {
+            if (record[1].to_string() == inputuser) && record[3].split_whitespace().any(|word| word.to_lowercase() == inputword){
+                datecounter3[index]+=1;
+                datecounter1[index]+=1;
 
-            futureadd = true;
+                if index>0 {
+                    datecounter1[index-1]+=1;
+                }
+
+                futureadd = true;
+            }
         }
-
 
     }
     println!("{:?}", datecounter1);
